@@ -5,6 +5,7 @@ deryaHesap={
     'bakiye':3000,
     'birikimHesabı':7000,
     'krediLimit':5000,
+    'krediBorc':0,
 }
 
 emreHesap={
@@ -14,10 +15,12 @@ emreHesap={
     'bakiye':5000,
     'birikimHesabı':7000,
     'krediLimit':2500,
+    'krediBorc':0,
 }
 
 hesaplar=[emreHesap,deryaHesap]
 def hesapBul(isim,sifre):
+
     for hesap in hesaplar:
         if hesap['isim']==isim and hesap['sifre']==sifre:
             return hesap
@@ -95,14 +98,19 @@ def krediCek(hesap,miktar):
     krediLimitSorgula(hesap)
     if miktar>hesap['krediLimit']:
         print("Limit Yetersiz")
+        yeniİslem(hesap)
     else:
         hesap['krediLimit']-=miktar
         krediBorc=(-1)*miktar
-        print(f"Krediniz başarıyla çekilmiştir.Güncel borcunuz:{krediBorc}TL.")
+        hesap['krediBorc']=krediBorc
+        print(f"Krediniz başarıyla çekilmiştir.Güncel borcunuz:{hesap['krediBorc']}TL.")
         yeniİslem(hesap)
+def krediBorcOde(hesap,miktar):
+        hesap['krediBorc']+=miktar
+        print(f'Borc yatirildi kalan borc:{hesap['krediBorc']}')
 
 def bankaMatik(hesap):
-        yapilacakIslem=int(input(f"1-Bakiye Sorgulama\n2-Kredi Limit Sorgulama\n3-Para Çekme\n4-Para Yatırma\n5-Kredi Çekme\nHoş Geldiniz {hesap['isim']}.Lütfen yapmak istediğiniz işlemi tuşlayınız:"))
+        yapilacakIslem=int(input(f"1-Bakiye Sorgulama\n2-Kredi Limit Sorgulama\n3-Para Çekme\n4-Para Yatırma\n5-Kredi Çekme \n6-Kredi borç ödeme \nHoş Geldiniz {hesap['isim']}.Lütfen yapmak istediğiniz işlemi tuşlayınız:"))
         if yapilacakIslem==1:
             bakiyeSorgulamaMenu(hesap)
         elif yapilacakIslem==2:
@@ -116,8 +124,16 @@ def bankaMatik(hesap):
             paraYatır(hesap,miktar)
         elif yapilacakIslem==5:
             krediLimitSorgula(hesap)
-            miktar=int(input("Çekmek istediğiniz kredi miktarı."))
+            miktar=int(input("Çekmek istediğiniz kredi miktarı:"))
             krediCek(hesap,miktar)
+        elif yapilacakIslem==6:
+            print(hesap['krediBorc'])
+            miktar = int(input("Odemek istediğiniz kredi miktarini giriniz:"))
+            if miktar*(-1)>hesap['krediBorc']:
+                print('Fazla miktar girdiniz.')
+                yeniİslem(hesap)
+            else:
+                krediBorcOde(hesap,miktar)
         else:
             print("Eksik veya hatalı tuşlama girdiniz.")
 
