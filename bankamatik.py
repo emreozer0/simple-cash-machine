@@ -1,3 +1,4 @@
+"""
 deryaHesap={
     'isim':'Derya',
     'sifre':5901,
@@ -154,8 +155,155 @@ if hesap:
 else:
     print("Kullanıcı adı veya Şifre hatalı.")
 
+"""
+deryaAccount = {
+    'name': 'Derya',
+    'password': 5901,
+    'accountNo': '1',
+    'balance': 3000,
+    'savingsAccount': 7000,
+    'creditLimit': 5000,
+    'creditDebt': 0,
+}
 
+emreAccount = {
+    'name': 'Emre',
+    'password': 3013,
+    'accountNo': '2',
+    'balance': 5000,
+    'savingsAccount': 7000,
+    'creditLimit': 2500,
+    'creditDebt': 0,
+}
 
+accounts = [emreAccount, deryaAccount]
+
+def findAccount(name, password):
+    for account in accounts:
+        if account['name'] == name and account['password'] == password:
+            return account
+    else:
+        return None
+
+def withdrawMoney(account, amount):
+    if account['balance'] >= amount:
+        account['balance'] -= amount
+        print("Your withdrawal transaction was successfully completed.")
+        checkBalance(account)
+        newTransaction(account)
+    else:
+        if account['balance'] + account['savingsAccount'] >= amount:
+            savingsApproval = input("Insufficient balance in your account. Would you like to use your savings account?")
+            if savingsApproval.lower() == "yes":
+                savingsAmount = amount - account['balance']
+                account['balance'] = 0
+                account['savingsAccount'] -= savingsAmount
+                print("Your withdrawal transaction was successfully completed.")
+                checkBalance(account)
+                newTransaction(account)
+            elif savingsApproval.lower() == "no":
+                print("Transaction is being terminated.")
+            else:
+                print("Invalid or incomplete entry.")
+        else:
+            if account['balance'] + account['savingsAccount'] + account['creditLimit'] >= amount:
+                checkCreditLimit(account)
+                creditUseApproval = input("Insufficient balance in your main and savings accounts. Would you like to use your credit for the remaining amount?")
+                if creditUseApproval.lower() == "yes":
+                    creditAmount = (amount - account['balance']) - account['savingsAccount']
+                    account['balance'] = 0
+                    account['savingsAccount'] = 0
+                    account['creditLimit'] -= creditAmount
+                    print(f"You successfully used your credit. Your current debt is { -1 * creditAmount}.")
+                    newTransaction(account)
+                else:
+                    print("Transaction is being terminated.")
+            else:
+                print("Sorry, insufficient balance and credit limit.")
+
+def depositMoney(account, amount):
+    accountType = int(input("1-Main Account\n2-Savings Account\nPlease select the account you want to deposit money into:"))
+    if accountType == 1:
+        account['balance'] += amount
+        print("Your deposit transaction was successfully completed.")
+        checkBalance(account)
+        newTransaction(account)
+    elif accountType == 2:
+        account['savingsAccount'] += amount
+        print("Your deposit transaction was successfully completed.")
+        checkBalance(account)
+        newTransaction(account)
+    else:
+        print("Invalid or incomplete entry.")
+        newTransaction(account)
+
+def checkBalance(account):
+    print(f"After the transactions, the balance of account number {account['accountNo']} is {account['balance']}TL. Your savings account balance is {account['savingsAccount']}TL.")
+
+def checkCreditLimit(account):
+    print(f"Your credit limit is {account['creditLimit']}TL.")
+
+def withdrawCredit(account, amount):
+    checkCreditLimit(account)
+    if amount > account['creditLimit']:
+        print("Limit exceeded.")
+        newTransaction(account)
+    else:
+        account['creditLimit'] -= amount
+        creditDebt = (-1) * amount
+        account['creditDebt'] = creditDebt
+        print(f"Your credit has been successfully withdrawn. Your current debt is {account['creditDebt']}TL.")
+        newTransaction(account)
+
+def payCreditDebt(account, amount):
+    account['creditDebt'] += amount
+    print(f'Debt payment successful. Remaining debt: {account["creditDebt"]}')
+
+def atm(account):
+    action = int(input(f"1-Balance Inquiry\n2-Credit Limit Inquiry\n3-Withdraw Money\n4-Deposit Money\n5-Withdraw Credit\n6-Pay Credit Debt\nWelcome {account['name']}. Please select the transaction you want to perform:"))
+    if action == 1:
+        checkBalance(account)
+    elif action == 2:
+        checkCreditLimit(account)
+    elif action == 3:
+        checkBalance(account)
+        amount = int(input("Enter the amount you want to withdraw:"))
+        withdrawMoney(account, amount)
+    elif action == 4:
+        amount = int(input("Enter the amount you want to deposit:"))
+        depositMoney(account, amount)
+    elif action == 5:
+        checkCreditLimit(account)
+        amount = int(input("Enter the amount of credit you want to withdraw:"))
+        withdrawCredit(account, amount)
+    elif action == 6:
+        print(account['creditDebt'])
+        amount = int(input("Enter the amount of credit debt you want to pay:"))
+        if amount * (-1) > account['creditDebt']:
+            print('You entered an excessive amount.')
+            newTransaction(account)
+        else:
+            payCreditDebt(account, amount)
+    else:
+        print("Invalid or incomplete entry.")
+
+def newTransaction(account):
+    continueTransaction = input("Would you like to perform another transaction?")
+    if continueTransaction.lower() == "yes":
+        atm(account)
+    elif continueTransaction.lower() == "no":
+        print("Transaction is being terminated.")
+    else:
+        print("Invalid or incomplete entry. Transaction is being terminated.")
+
+name = input("Please enter your account name:")
+password = int(input("Please enter your 4-digit password (numbers only):"))
+account = findAccount(name, password)
+
+if account:
+    atm(account)
+else:
+    print("Incorrect username or password.")
 
 
 
